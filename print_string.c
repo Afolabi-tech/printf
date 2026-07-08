@@ -1,5 +1,9 @@
 #include "main.h"
-//print_string - return strings
+
+/**
+*print_string - return strings
+*/
+
 
 int print_string(char *p_string){
     int index = 0;

@@ -6,6 +6,9 @@
 *@c: count characters
 *@s: count strings
 *@%: count percentage
+*@d: decimal numbers
+*@i: integer
+*@b: binary
 */
 
 
@@ -29,6 +32,15 @@ int _printf(const char *format, ...) {
 
             else if (format[index] == 's')
                 count += print_string(va_arg(p_args, char *));
+
+
+            else if (format[index] == 'd' || format[index] == 'i')
+            {
+                count += print_int(va_arg(p_args, int)); 
+            }
+            
+            else if (format[index] == 'b')
+                count += print_binary(va_arg(p_args, unsigned int));
 
             else if (format[index] == '%')
                 count += write(1, "%", 1);
