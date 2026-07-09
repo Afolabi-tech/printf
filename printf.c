@@ -9,6 +9,10 @@
 *@d: decimal numbers
 *@i: integer
 *@b: binary
+*@u: unsigned decimal
+*@o: octal (base 8)
+*@x: lowercase hexadecimal (0123456789abcdef)
+*@X: uppercase hexadecimal (0123456789ABCDEF)
 */
 
 
@@ -41,6 +45,19 @@ int _printf(const char *format, ...) {
             
             else if (format[index] == 'b')
                 count += print_binary(va_arg(p_args, unsigned int));
+            
+            else if (format[index] == 'u')
+                count += print_unsigned(va_arg(p_args, unsigned int));
+
+            else if (format[index] == 'o')
+                count += print_base(va_arg(p_args, unsigned int), "01234567");
+
+            else if (format[index] == 'x')
+                count += print_base(va_arg(p_args, unsigned int), "0123456789abcdef");
+
+            else if (format[index] == 'X')
+                count += print_base(va_arg(p_args, unsigned int), "0123456789ABCDEF");
+
 
             else if (format[index] == '%')
                 count += write(1, "%", 1);
