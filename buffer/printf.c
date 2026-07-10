@@ -25,6 +25,9 @@ int _printf(const char *format, ...)
     int i;
     int count;
     int buf_index;
+    int plus_flag;
+    int space_flag;
+    int hash_flag;
 
     if (!format)
         return -1;
@@ -33,6 +36,7 @@ int _printf(const char *format, ...)
 
     count = 0;
     buf_index = 0;
+   
 
     for (i = 0; format[i] != '\0'; i++) 
     {
@@ -41,13 +45,33 @@ int _printf(const char *format, ...)
             count += add_to_buffer(format[i],
                                    buffer,
                                    &buf_index);
-
+            continue;
         }
+
+
         else
         {
             i++;
 
-            if (format[i] == '\1')
+            plus_flag = 0;
+            space_flag = 0;
+            hash_flag = 0;
+
+            while (format[i] == '+' ||
+                   format[i] == ' ' ||
+                   format[i] == '#')
+            {
+                if (format[i] == '+')
+                    plus_flag = 1;
+                else if (format[i] == ' ')
+                    space_flag = 1;
+                else 
+                    hash_flag = 1;
+
+                i++;
+            }
+
+            if (format[i] == '\0')
             {
                 flush_buffer(buffer,
                              &buf_index);
@@ -75,12 +99,31 @@ int _printf(const char *format, ...)
                     
                 case 'd':
                 case 'i':
-                    count += print_int(
-                        va_arg(p_args, int),
-                        buffer,
-                        &buf_index);
+                {
+                    int n;
+
+                    n = va_arg(p_args, int);
+
+                    if (n >= 0)
+                    {
+                        
+                        if (plus_flag)
+                            count += add_to_buffer('+',
+                                                   buffer,
+                                                   &buf_index);
+
+                        else if (space_flag)
+                            count += add_to_buffer(' ',
+                                                   buffer,
+                                                   &buf_index);
+                    }
+                
+                    count += print_int(n,
+                                       buffer,
+                                       &buf_index);
                     break;
-            
+                }
+
             
                 case 'b':
                     count += print_binary(
@@ -98,29 +141,72 @@ int _printf(const char *format, ...)
 
 
                 case'o':
-                    count += print_base(
-                        va_arg(p_args, unsigned int), 
-                        "01234570",
-                        buffer,
-                        &buf_index);
+                {
+                    unsigned int n;
+
+                    n = va_arg(p_args, unsigned int);
+
+                    if (hash_flag && n != 0)
+                        count += add_to_buffer('0',
+                                               buffer,
+                                               &buf_index);
+
+                    count += print_base(n, 
+                                        "01234567",
+                                        buffer,
+                                        &buf_index);
                     break;
+                }
+
 
                 case'x':
-                    count += print_base(    
-                        va_arg(p_args, unsigned int), 
-                        "123456790abcdef",
+                {
+                    unsigned int n;
+
+                    n = va_arg(p_args, unsigned int);
+
+                    if (hash_flag && n != 0)
+                    {
+                        count += add_to_buffer('0',
+                                                buffer,
+                                                &buf_index);
+
+                        count += add_to_buffer('x',
+                                               buffer,
+                                               &buf_index);
+
+                    }
+                    count += print_base(n,
+                        "0123456790abcdef",
                         buffer,
                         &buf_index);
                     break;
+                }
+
 
                 case 'X':
-                    count += print_base(
-                        va_arg(p_args, unsigned int), 
-                        "123456790ABCDEF",
+                {
+                    unsigned int n;
+
+                    n = va_arg(p_args, unsigned int);
+
+                    if (hash_flag && n != 0)
+                    {
+                        count += add_to_buffer('0',
+                                               buffer,
+                                               &buf_index);
+
+                        count += add_to_buffer('X',
+                                               buffer,
+                                               &buf_index);
+                    }
+
+                    count += print_base(n,
+                        "0123456790ABCDEF",
                         buffer,
                         &buf_index);
                     break;
-
+                }
 
 
                 case '%':
@@ -130,6 +216,8 @@ int _printf(const char *format, ...)
                         &buf_index);
                     break;
 
+
+               
 
                 case 'S':
                     count += print_special_string(
