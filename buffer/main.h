@@ -13,9 +13,11 @@ int _printf(const char *format, ...);
 int print_char(char p_char, 
                char buffer[],
                int *buf_index);
+
 int print_string(char *p_string, 
                  char buffer[], 
                  int *buf_index);
+
 int print_int(int n, 
               char buffer[], 
               int *buf_index);
@@ -39,5 +41,18 @@ void flush_buffer(char buffer[],
 int add_to_buffer(char p_char, 
                   char buffer[], 
                   int *buf_index);
+
+int print_special_string(char *str,
+                         char buffer[],
+                         int *buf_index);
+
+int print_pointer(void *ptr,
+                  char buffer[],
+                  int *buf_index);
+
+int print_ulong_base(unsigned long n,
+                    char *base,
+                    char buffer[],
+                    int *buf_index);
 
 #endif

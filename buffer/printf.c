@@ -130,7 +130,22 @@ int _printf(const char *format, ...)
                         &buf_index);
                     break;
 
-                    
+
+                case 'S':
+                    count += print_special_string(
+                        va_arg(p_args, char *),
+                        buffer,
+                        &buf_index);
+                    break;
+
+                case 'p':
+                    count += print_pointer(
+                                        va_arg(p_args, void *),
+                                        buffer,
+                                        &buf_index);
+                    break;
+
+                
                 default:
                     count += add_to_buffer(
                         '%',
