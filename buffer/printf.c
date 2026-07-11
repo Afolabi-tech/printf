@@ -31,6 +31,7 @@ int _printf(const char *format, ...)
     int hash_flag;
     int long_flag;
     int short_flag;
+    int width;
 
     if (!format)
         return -1;
@@ -61,7 +62,9 @@ int _printf(const char *format, ...)
             hash_flag = 0;
             long_flag = 0;
             short_flag = 0;
+            width = 0;
 
+            /* Parse Flag character +, space and # */
             while (format[i] == '+' ||
                    format[i] == ' ' ||
                    format[i] == '#')
@@ -75,7 +78,8 @@ int _printf(const char *format, ...)
 
                 i++;
             }
-
+    
+            /*Parse Length modifier l-long_flag and h-short_flag */
             while (format[i] == 'l' ||
                    format[i] == 'h')
             {
@@ -86,6 +90,16 @@ int _printf(const char *format, ...)
 
                 i++;
             }
+
+            /*Parse Field Width */
+            while (format[i] >= '0' && 
+                    format[i] <= '9')
+            {
+                width = width * 10 + 
+                        (format[i] - '0');
+                i++;
+            }
+
 
             if (format[i] == '\0')
             {
@@ -98,6 +112,12 @@ int _printf(const char *format, ...)
             switch (format[i])
             {
                 case 'c':
+
+                    count += print_padding(width,
+                                           1,
+                                           buffer,
+                                           &buf_index);
+
                     count += print_char(
                         va_arg(p_args, int),
                         buffer,
@@ -106,17 +126,31 @@ int _printf(const char *format, ...)
 
 
                 case 's':
+                {
+                    char *s;
+                    int len;
+
+                    s = va_arg(p_args, char *);
+                    len = str_len(s);
+
+                    count += print_padding(width,
+                                           len,
+                                           buffer,
+                                           &buf_index);
+
                     count += print_string(
-                        va_arg(p_args, char *),
-                        buffer,
-                        &buf_index);
+                                           s,
+                                           buffer,
+                                           &buf_index);
                     break;
+                }
 
                     
                 case 'd':
                 case 'i':
                 {
                     long n;
+                    int len;
 
                     if (long_flag)
                         n = va_arg(p_args, long);
@@ -139,6 +173,13 @@ int _printf(const char *format, ...)
                                                    &buf_index);
                     }
                 
+                    len = int_len(n);
+
+                    count += print_padding(width,
+                                           len,
+                                           buffer,
+                                           &buf_index);
+
                     count += print_long_int(n,
                                        buffer,
                                        &buf_index);
@@ -156,6 +197,8 @@ int _printf(const char *format, ...)
                 case 'u':
                 {
                     unsigned long n;
+                    int len;
+                    
 
                     if (long_flag)
                         n = va_arg(p_args, unsigned long);
@@ -164,6 +207,13 @@ int _printf(const char *format, ...)
                             va_arg(p_args, unsigned int);
                     else
                         n = va_arg(p_args, unsigned int);
+
+                    len = base_len(n, 10);
+
+                    count += print_padding(width,
+                                           len,
+                                           buffer,
+                                           &buf_index);
 
 
                     count += print_ulong_base(
@@ -178,6 +228,7 @@ int _printf(const char *format, ...)
                 case'o':
                 {
                     unsigned long n;
+                    int len;
 
                     if (long_flag)
                         n = va_arg(p_args, unsigned long);
@@ -187,6 +238,15 @@ int _printf(const char *format, ...)
                     else 
                         n = va_arg(p_args, unsigned int);
 
+                    len = base_len(n, 8);
+
+                    if (hash_flag && n != 0)
+                        len++;
+
+                    count += print_padding(width,
+                                           len,
+                                           buffer,
+                                           &buf_index);
                   
 
                     if (hash_flag && n != 0)
@@ -205,6 +265,7 @@ int _printf(const char *format, ...)
                 case'x':
                 {
                     unsigned long n;
+                    int len;
 
                     if (long_flag)
                         n = va_arg(p_args, unsigned long);
@@ -213,6 +274,16 @@ int _printf(const char *format, ...)
                             va_arg(p_args, unsigned int);
                     else
                         n = va_arg(p_args, unsigned int);
+
+                    len = base_len(n, 16);
+
+                    if (hash_flag && n != 0)
+                        len += 2;
+
+                    count += print_padding(width,
+                                           len,
+                                           buffer,
+                                           &buf_index);
 
                     if (hash_flag && n != 0)
                     {
@@ -236,6 +307,7 @@ int _printf(const char *format, ...)
                 case 'X':
                 {
                     unsigned long n;
+                    int len;
 
                     if (long_flag)
                         n = va_arg(p_args, unsigned long);
@@ -244,7 +316,16 @@ int _printf(const char *format, ...)
                             va_arg(p_args, unsigned int);
                     else
                         n = va_arg(p_args, unsigned int);
+                    
+                    len = base_len(n, 16);
 
+                    if (hash_flag && n != 0)
+                        len += 2;
+
+                    count += print_padding(width,
+                                           len,
+                                           buffer,
+                                           &buf_index);
                     if (hash_flag && n != 0)
                     {
                         count += add_to_buffer('0',

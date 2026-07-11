@@ -59,4 +59,15 @@ int print_long_int(long n,
                    char buffer[],
                    int *buf_index);
 
+int print_padding(int width,
+                  int len,
+                  char buffer[],
+                  int *buf_index);
+
+int str_len(char *s);
+
+int int_len(long n);
+
+int base_len(unsigned long n, int base);
+
 #endif
