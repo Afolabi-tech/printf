@@ -32,6 +32,9 @@ int _printf(const char *format, ...)
     int long_flag;
     int short_flag;
     int width;
+    int precision;
+    int zeros;
+
 
     if (!format)
         return -1;
@@ -63,8 +66,10 @@ int _printf(const char *format, ...)
             long_flag = 0;
             short_flag = 0;
             width = 0;
+            precision = -1;
 
-            /* Parse Flag character +, space and # */
+
+            /*Flag character +, space and # */
             while (format[i] == '+' ||
                    format[i] == ' ' ||
                    format[i] == '#')
@@ -79,7 +84,7 @@ int _printf(const char *format, ...)
                 i++;
             }
     
-            /*Parse Length modifier l-long_flag and h-short_flag */
+            /*Length modifier l-long_flag and h-short_flag */
             while (format[i] == 'l' ||
                    format[i] == 'h')
             {
@@ -91,7 +96,7 @@ int _printf(const char *format, ...)
                 i++;
             }
 
-            /*Parse Field Width */
+            /*Field Width */
             while (format[i] >= '0' && 
                     format[i] <= '9')
             {
@@ -100,6 +105,20 @@ int _printf(const char *format, ...)
                 i++;
             }
 
+            /*Precision */
+            if (format[i] == '.')
+            {
+                precision = 0;
+                i++;
+
+                while (format[i] >= '0' &&
+                    format[i] <= '9')
+                {
+                    precision = precision * 10 +
+                            (format[i] - '0');
+                    i++;
+                }
+            }   
 
             if (format[i] == '\0')
             {
@@ -129,6 +148,7 @@ int _printf(const char *format, ...)
                 {
                     char *s;
                     int len;
+                    int j;
 
                     s = va_arg(p_args, char *);
                     len = str_len(s);
@@ -138,10 +158,19 @@ int _printf(const char *format, ...)
                                            buffer,
                                            &buf_index);
 
-                    count += print_string(
-                                           s,
-                                           buffer,
-                                           &buf_index);
+                    if (s == NULL)
+                        s = "(null)";
+
+                    len = str_n_len(s, precision);
+
+                    for (j = 0; j < len; j++)
+                    {       
+                        count += add_to_buffer(
+                            s[j],
+                            buffer,
+                            &buf_index);
+                    }
+
                     break;
                 }
 
@@ -151,6 +180,7 @@ int _printf(const char *format, ...)
                 {
                     long n;
                     int len;
+                    int zeros;
 
                     if (long_flag)
                         n = va_arg(p_args, long);
@@ -158,6 +188,9 @@ int _printf(const char *format, ...)
                         n = (short)va_arg(p_args, int);
                     else
                         n = va_arg(p_args, int);
+
+                    if (precision == 0 && n == 0)
+                        break;
 
                     if (n >= 0)
                     {
@@ -174,6 +207,26 @@ int _printf(const char *format, ...)
                     }
                 
                     len = int_len(n);
+
+                    if (n < 0)
+                        len--;
+
+                    zeros = 0;    
+
+                    if (precision > len)
+                        zeros = precision - len;
+
+                    if (n < 0)
+                    {
+                        count += add_to_buffer('-',
+                                            buffer,
+                                            &buf_index);
+                        n = -n;
+                    }
+
+                    count += print_zeros(zeros,
+                                    buffer,
+                                    &buf_index);
 
                     count += print_padding(width,
                                            len,
@@ -207,8 +260,20 @@ int _printf(const char *format, ...)
                             va_arg(p_args, unsigned int);
                     else
                         n = va_arg(p_args, unsigned int);
+                    
+                    if (precision == 0 && n == 0)
+                        break;
 
                     len = base_len(n, 10);
+
+                    zeros = 0;
+
+                    if (precision > len)
+                    zeros = precision - len;
+
+                    count += print_zeros(zeros,
+                                         buffer,
+                                         &buf_index);
 
                     count += print_padding(width,
                                            len,
@@ -238,7 +303,19 @@ int _printf(const char *format, ...)
                     else 
                         n = va_arg(p_args, unsigned int);
 
+                    if (precision == 0 && n == 0)
+                        break;
+
                     len = base_len(n, 8);
+
+                    zeros = 0;
+
+                    if (precision > len)
+                        zeros = precision - len;
+
+                    count += print_zeros(zeros,
+                                buffer,
+                                &buf_index);
 
                     if (hash_flag && n != 0)
                         len++;
@@ -275,7 +352,19 @@ int _printf(const char *format, ...)
                     else
                         n = va_arg(p_args, unsigned int);
 
+                    if (precision == 0 && n == 0)
+                        break;
+
                     len = base_len(n, 16);
+                    
+                    zeros = 0;
+
+                    if (precision > len)
+                    zeros = precision - len;
+
+                    count += print_zeros(zeros,
+                                         buffer,
+                                         &buf_index);
 
                     if (hash_flag && n != 0)
                         len += 2;
@@ -317,7 +406,19 @@ int _printf(const char *format, ...)
                     else
                         n = va_arg(p_args, unsigned int);
                     
+                    if (precision == 0 && n == 0)
+                        break;
+
                     len = base_len(n, 16);
+
+                    zeros = 0;
+
+                    if (precision > len)
+                    zeros = precision - len;
+
+                    count += print_zeros(zeros,
+                                         buffer,
+                                         &buf_index);
 
                     if (hash_flag && n != 0)
                         len += 2;

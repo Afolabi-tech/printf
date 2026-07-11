@@ -70,4 +70,10 @@ int int_len(long n);
 
 int base_len(unsigned long n, int base);
 
+int print_zeros(int zeros,
+                char buffer[],
+                int *buf_index);
+
+int str_n_len(char *s, int precision);
+
 #endif
