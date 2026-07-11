@@ -1,5 +1,6 @@
 #include "main.h"
 
+
 /**
 *printf - function that produces output according  to a format
 *
@@ -28,6 +29,8 @@ int _printf(const char *format, ...)
     int plus_flag;
     int space_flag;
     int hash_flag;
+    int long_flag;
+    int short_flag;
 
     if (!format)
         return -1;
@@ -56,6 +59,8 @@ int _printf(const char *format, ...)
             plus_flag = 0;
             space_flag = 0;
             hash_flag = 0;
+            long_flag = 0;
+            short_flag = 0;
 
             while (format[i] == '+' ||
                    format[i] == ' ' ||
@@ -67,6 +72,17 @@ int _printf(const char *format, ...)
                     space_flag = 1;
                 else 
                     hash_flag = 1;
+
+                i++;
+            }
+
+            while (format[i] == 'l' ||
+                   format[i] == 'h')
+            {
+                if (format[i] == 'l')
+                    long_flag = 1;
+                else
+                    short_flag = 1;
 
                 i++;
             }
@@ -100,9 +116,14 @@ int _printf(const char *format, ...)
                 case 'd':
                 case 'i':
                 {
-                    int n;
+                    long n;
 
-                    n = va_arg(p_args, int);
+                    if (long_flag)
+                        n = va_arg(p_args, long);
+                    else if (short_flag)
+                        n = (short)va_arg(p_args, int);
+                    else
+                        n = va_arg(p_args, int);
 
                     if (n >= 0)
                     {
@@ -118,7 +139,7 @@ int _printf(const char *format, ...)
                                                    &buf_index);
                     }
                 
-                    count += print_int(n,
+                    count += print_long_int(n,
                                        buffer,
                                        &buf_index);
                     break;
@@ -133,25 +154,47 @@ int _printf(const char *format, ...)
                     break;
             
                 case 'u':
-                    count += print_unsigned(
-                        va_arg(p_args, unsigned int),
+                {
+                    unsigned long n;
+
+                    if (long_flag)
+                        n = va_arg(p_args, unsigned long);
+                    else if (short_flag)
+                        n = (unsigned short)
+                            va_arg(p_args, unsigned int);
+                    else
+                        n = va_arg(p_args, unsigned int);
+
+
+                    count += print_ulong_base(
+                        n,
+                        "0123456789",
                         buffer,
                         &buf_index);
                     break;
+                }
 
 
                 case'o':
                 {
-                    unsigned int n;
+                    unsigned long n;
 
-                    n = va_arg(p_args, unsigned int);
+                    if (long_flag)
+                        n = va_arg(p_args, unsigned long);
+                    else if (short_flag)
+                        n = (unsigned short)
+                            va_arg(p_args, unsigned int);
+                    else 
+                        n = va_arg(p_args, unsigned int);
+
+                  
 
                     if (hash_flag && n != 0)
                         count += add_to_buffer('0',
                                                buffer,
                                                &buf_index);
 
-                    count += print_base(n, 
+                    count += print_ulong_base(n, 
                                         "01234567",
                                         buffer,
                                         &buf_index);
@@ -161,9 +204,15 @@ int _printf(const char *format, ...)
 
                 case'x':
                 {
-                    unsigned int n;
+                    unsigned long n;
 
-                    n = va_arg(p_args, unsigned int);
+                    if (long_flag)
+                        n = va_arg(p_args, unsigned long);
+                    else if (short_flag)
+                        n = (unsigned short)
+                            va_arg(p_args, unsigned int);
+                    else
+                        n = va_arg(p_args, unsigned int);
 
                     if (hash_flag && n != 0)
                     {
@@ -176,7 +225,7 @@ int _printf(const char *format, ...)
                                                &buf_index);
 
                     }
-                    count += print_base(n,
+                    count += print_ulong_base(n,
                         "0123456790abcdef",
                         buffer,
                         &buf_index);
@@ -186,9 +235,15 @@ int _printf(const char *format, ...)
 
                 case 'X':
                 {
-                    unsigned int n;
+                    unsigned long n;
 
-                    n = va_arg(p_args, unsigned int);
+                    if (long_flag)
+                        n = va_arg(p_args, unsigned long);
+                    else if (short_flag)
+                        n = (unsigned short)
+                            va_arg(p_args, unsigned int);
+                    else
+                        n = va_arg(p_args, unsigned int);
 
                     if (hash_flag && n != 0)
                     {
@@ -201,7 +256,7 @@ int _printf(const char *format, ...)
                                                &buf_index);
                     }
 
-                    count += print_base(n,
+                    count += print_ulong_base(n,
                         "0123456790ABCDEF",
                         buffer,
                         &buf_index);

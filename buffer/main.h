@@ -55,4 +55,8 @@ int print_ulong_base(unsigned long n,
                     char buffer[],
                     int *buf_index);
 
+int print_long_int(long n,
+                   char buffer[],
+                   int *buf_index);
+
 #endif
