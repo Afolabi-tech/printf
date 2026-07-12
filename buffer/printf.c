@@ -34,6 +34,8 @@ int _printf(const char *format, ...)
     int width;
     int precision;
     int zeros;
+    int zero_flag;
+    int minus_flag;
 
 
     if (!format)
@@ -67,19 +69,27 @@ int _printf(const char *format, ...)
             short_flag = 0;
             width = 0;
             precision = -1;
+            zero_flag = 0;
+            minus_flag = 0;
 
 
             /*Flag character +, space and # */
             while (format[i] == '+' ||
                    format[i] == ' ' ||
-                   format[i] == '#')
+                   format[i] == '#' ||
+                   format[i] == '0' ||
+                   format[i] == '-')
             {
                 if (format[i] == '+')
                     plus_flag = 1;
                 else if (format[i] == ' ')
                     space_flag = 1;
-                else 
+                else if (format[i] == '#')
                     hash_flag = 1;
+                else if (format[i] == '0')
+                    zero_flag = 1;
+                else
+                    minus_flag = 1;
 
                 i++;
             }
@@ -227,15 +237,37 @@ int _printf(const char *format, ...)
                     count += print_zeros(zeros,
                                     buffer,
                                     &buf_index);
-
-                    count += print_padding(width,
+                    
+                    if (width > len)
+                    {
+                        if (zero_flag && precision < 0)
+                            count += print_char_n(
+                                    '0',
+                                    width - len,
+                                    buffer,
+                                    &buf_index);
+                        
+                        else if (minus_flag)
+                        {
+    
+                            count += print_char_n(
+                                    ' ',
+                                    width - len,
+                                    buffer,
+                                    &buf_index);
+                        }
+                        else
+                            count += print_padding(
+                                           width,
                                            len,
                                            buffer,
                                            &buf_index);
-
+                    }
+                
+            
                     count += print_long_int(n,
                                        buffer,
-                                       &buf_index);
+                                       &buf_index); 
                     break;
                 }
 
@@ -369,10 +401,26 @@ int _printf(const char *format, ...)
                     if (hash_flag && n != 0)
                         len += 2;
 
-                    count += print_padding(width,
+                    if (width > len)
+                    {
+                        if (zero_flag && !minus_fla    g && precision < 0)
+                        {
+                            count += print_char_n(
+                                            '0',
+                                            width - len,
+                                            buffer,
+                                            &buf_index);
+                        }
+
+                        else
+                        {
+
+                            count += print_padding(width,
                                            len,
                                            buffer,
                                            &buf_index);
+                        }
+                    }
 
                     if (hash_flag && n != 0)
                     {
@@ -423,6 +471,8 @@ int _printf(const char *format, ...)
                     if (hash_flag && n != 0)
                         len += 2;
 
+                    if (width > len)                                    {                                                       if (zero_flag && !minus_flag && precision < 0)                                                        {                                                       count += print_char_n(                                    '0',                                                width - len,                                       buffer,                                            &buf_index);                                                                             }                                                                                                     else                                               {                                                                                                           count += print_padding( 
+                                 width,                                             len,                                               buffer,                                            &buf_index);                                                                                    }                                            }
                     count += print_padding(width,
                                            len,
                                            buffer,
@@ -445,6 +495,21 @@ int _printf(const char *format, ...)
                     break;
                 }
 
+                /* %r: reverse string */
+                case 'r':
+                    count += print_reverse(
+                            va_arg(p_args, char *),
+                            buffer,
+                            &buf_index);
+                    break;
+
+                /* %R: ROT13 */
+                case 'R':
+                    count += print_rot13(
+                            va_arg(p_args, char *),
+                            buffer,
+                            &buf_index);
+                    break;
 
                 case '%':
                     count += add_to_buffer(

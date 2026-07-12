@@ -76,4 +76,17 @@ int print_zeros(int zeros,
 
 int str_n_len(char *s, int precision);
 
+int print_char_n(char c,
+                 int n,
+                 char buffer[],
+                 int *buf_index);
+
+int print_reverse(char *s,
+                  char buffer[],
+                  int *buf_index);
+
+int print_rot13(char*s,
+                char buffer[],
+                int *buf_index);
+
 #endif
