@@ -38,7 +38,9 @@ int main(void)
 	len2 = printf("Percent:[%%]\n");
 	_printf("Len:[%d]\n", len);
 	printf("Len:[%d]\n", len2);
-	_printf("Unknown:[%r]\n");
-	_printf("Unknown:[%r]\n");
+	_printf("Unknown:[%r]\n", "Programming");
+    _printf("Unknown:[%r]\n", "Programming");
+	_printf("Unknown:[%R]\n", "Programming");
+    _printf("Unknown:[%R]\n", "Programming");
 	return (0);
 }

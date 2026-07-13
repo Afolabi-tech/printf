@@ -2,7 +2,7 @@
 
 
 /**
-*printf - function that produces output according  to a format
+*_printf - function that produces output according  to a format
 *
 *@c: count characters
 *@s: count strings
@@ -58,19 +58,29 @@ int _printf(const char *format, ...)
         }
 
 
-        else
+       
+        i++;
+
+        if (format[i] == '\0')
         {
-            i++;
+            flush_buffer(buffer,
+                         &buf_index);
+                         va_end(p_args);
+
+            return (-1);
+
+        }
 
             plus_flag = 0;
             space_flag = 0;
             hash_flag = 0;
-            long_flag = 0;
+            long_flag = 0;;
             short_flag = 0;
             width = 0;
             precision = -1;
             zero_flag = 0;
             minus_flag = 0;
+            
 
 
             /*Flag character +, space and # */
@@ -86,7 +96,7 @@ int _printf(const char *format, ...)
                     space_flag = 1;
                 else if (format[i] == '#')
                     hash_flag = 1;
-                else if (format[i] == '0')
+                else if (format[i] == '0')                    
                     zero_flag = 1;
                 else
                     minus_flag = 1;
@@ -105,6 +115,7 @@ int _printf(const char *format, ...)
 
                 i++;
             }
+
 
             /*Field Width */
             while (format[i] >= '0' && 
@@ -129,14 +140,8 @@ int _printf(const char *format, ...)
                     i++;
                 }
             }   
-
-            if (format[i] == '\0')
-            {
-                flush_buffer(buffer,
-                             &buf_index);
-                va_end(p_args);
-                return (0);
-            }
+       
+            
 
             switch (format[i])
             {
@@ -191,6 +196,8 @@ int _printf(const char *format, ...)
                     long n;
                     int len;
                     int zeros;
+                    
+                    
 
                     if (long_flag)
                         n = va_arg(p_args, long);
@@ -202,72 +209,84 @@ int _printf(const char *format, ...)
                     if (precision == 0 && n == 0)
                         break;
 
-                    if (n >= 0)
+                    if (n > 0)
                     {
-                        
                         if (plus_flag)
                             count += add_to_buffer('+',
                                                    buffer,
                                                    &buf_index);
 
-                        else if (space_flag)
+                         else if (space_flag)
                             count += add_to_buffer(' ',
                                                    buffer,
                                                    &buf_index);
                     }
-                
+                    
                     len = int_len(n);
 
                     if (n < 0)
                         len--;
 
-                    zeros = 0;    
-
+                    zeros = 0;
+                    
                     if (precision > len)
                         zeros = precision - len;
 
                     if (n < 0)
                     {
                         count += add_to_buffer('-',
-                                            buffer,
-                                            &buf_index);
+                                               buffer,
+                                               &buf_index);
                         n = -n;
+
+                        count += print_zeros(zeros,
+                                             buffer,
+                                             &buf_index);
+                    }
+                    
+                    if (minus_flag)
+                    {
+                        count += print_long_int(n,
+                                                buffer,
+                                                &buf_index);
+                        if (width > len)
+                        {
+                            count += print_char_n(' ',
+                                                width - len,
+                                                buffer,
+                                                &buf_index);
+                        }
                     }
 
-                    count += print_zeros(zeros,
-                                    buffer,
-                                    &buf_index);
-                    
-                    if (width > len)
+                    else
                     {
-                        if (zero_flag && precision < 0)
+
+                        if (zero_flag && 
+                            precision < 0 &&
+                            width > len)
+                        {
                             count += print_char_n(
                                     '0',
                                     width - len,
                                     buffer,
                                     &buf_index);
-                        
-                        else if (minus_flag)
-                        {
-    
-                            count += print_char_n(
-                                    ' ',
-                                    width - len,
-                                    buffer,
-                                    &buf_index);
                         }
+                       
                         else
+                        {
                             count += print_padding(
                                            width,
                                            len,
                                            buffer,
                                            &buf_index);
+                        }
+
+                        count += print_long_int(
+                                    n,
+                                    buffer,
+                                    &buf_index);
                     }
-                
             
-                    count += print_long_int(n,
-                                       buffer,
-                                       &buf_index); 
                     break;
                 }
 
@@ -279,7 +298,7 @@ int _printf(const char *format, ...)
                         &buf_index);
                     break;
             
-                case 'u':
+                case 'u':;
                 {
                     unsigned long n;
                     int len;
@@ -352,10 +371,44 @@ int _printf(const char *format, ...)
                     if (hash_flag && n != 0)
                         len++;
 
-                    count += print_padding(width,
+                    if (minus_flag)
+                    {
+                        count += print_ulong_base(n,
+                                                  "01234567",
+                                                  buffer,
+                                                  &buf_index);
+
+                        if (width > len)
+                        {
+                            count += print_char_n(' ',
+                                              width - len,
+                                              buffer,
+                                              &buf_index);
+                        }
+                    }
+
+                    else
+                    {
+                        if (zero_flag &&
+                            precision < 0 &&
+                            width > len)
+                        {
+                            count += print_char_n(
+                                                '0',
+                                                width - len,
+                                                buffer,
+                                                &buf_index);
+                        }
+
+                        else
+                        {
+                            
+                            count += print_padding(width,
                                            len,
                                            buffer,
                                            &buf_index);
+                        }
+                    }
                   
 
                     if (hash_flag && n != 0)
@@ -403,7 +456,7 @@ int _printf(const char *format, ...)
 
                     if (width > len)
                     {
-                        if (zero_flag && !minus_fla    g && precision < 0)
+                        if (zero_flag && !minus_flag && precision < 0)
                         {
                             count += print_char_n(
                                             '0',
@@ -471,12 +524,26 @@ int _printf(const char *format, ...)
                     if (hash_flag && n != 0)
                         len += 2;
 
-                    if (width > len)                                    {                                                       if (zero_flag && !minus_flag && precision < 0)                                                        {                                                       count += print_char_n(                                    '0',                                                width - len,                                       buffer,                                            &buf_index);                                                                             }                                                                                                     else                                               {                                                                                                           count += print_padding( 
-                                 width,                                             len,                                               buffer,                                            &buf_index);                                                                                    }                                            }
-                    count += print_padding(width,
-                                           len,
-                                           buffer,
-                                           &buf_index);
+                    if (width > len)                                   
+                    {                                                       
+                        if (zero_flag && !minus_flag && precision < 0)                                                        
+                        {                                                       
+                            count += print_char_n(                                    
+                                                  '0',                                                
+                                                  width - len,                                       
+                                                  buffer,                                            
+                                                  &buf_index);                                                                             
+                        }                                                                                                     
+                         else                                               
+                        {                                                                                                           
+                            count += print_padding( 
+                                                width,                                             
+                                                len,                                               
+                                                buffer,                                            
+                                                &buf_index);                                                                                   
+                         }                                            
+                    }
+                    
                     if (hash_flag && n != 0)
                     {
                         count += add_to_buffer('0',
@@ -546,9 +613,9 @@ int _printf(const char *format, ...)
                         format[i],
                         buffer,
                         &buf_index);
-                
+                    break;
             }
-        }
+        
 
     }
     
@@ -556,6 +623,6 @@ int _printf(const char *format, ...)
 
     va_end(p_args);
 
-    return count;
+    return (count);
 
 }
